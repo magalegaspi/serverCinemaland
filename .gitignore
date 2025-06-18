@@ -1,0 +1,12 @@
+# Ignorar la carpeta de dependencias
+node_modules/
+
+# Variables de entorno sensibles
+.env
+
+# Logs
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
