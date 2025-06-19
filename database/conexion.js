@@ -9,6 +9,7 @@ const getSQLConnection = async () => {
         // Ejemplo de consulta (opcional):
         // const resultado = await pool.request().query('SELECT TOP 1 * FROM Lenguajes');
         // console.log(resultado.recordset);
+        console.log("funciona pool: " + pool);
 
         return pool;
     } catch (error) {
