@@ -1,0 +1,51 @@
+@api = {{api}}
+
+
+GET {{api}}/sucursales HTTP/1.1
+
+###
+
+DELETE {{api}}/sucursales HTTP/1.1
+
+### REVISAR EL DE ABAJO
+
+GET {{api}}/sucursales/NOMBRE_SUCURSALES/html?ordenar=arriba HTTP/1.1
+
+### REVISAR EL DE ABAJO
+
+POST {{api}}/sucursales HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 30000,
+    "NOMBRE_SUCURSAL": "Rosario",
+    "HORARIOS": "19:00",
+    "ASIENTOS": "A1"
+}
+
+### TESTEAR EL DE ABAJO CUANDO FUNCIONE EL DE ARRIBA
+
+
+DELETE {{api}}/sucursales/1 HTTP/1.1
+
+### TESTEAR EL DE ABAJO
+
+PUT {{api}}/sucursales/1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 1,
+    "NOMBRE_SUCURSAL": "Rosario",
+    "HORARIOS": "19:00",
+    "ASIENTOS": "A1"
+}
+
+####
+
+PATCH {{api}}/sucursales HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 2,
+    "NOMBRE_SUCURSAL": "Mendoza"
+}
