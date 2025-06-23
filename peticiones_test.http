@@ -1,51 +1,51 @@
-@api = {{api}}
+@api = http://localhost:3000/api
 
 
-GET {{api}}/sucursales HTTP/1.1
+GET {{api}}/sucursales?ordenar=asc HTTP/1.1
 
 ###
 
-DELETE {{api}}/sucursales HTTP/1.1
+GET {{api}}/sucursales/NOMBRE_SUCURSALES HTTP/1.1
+Content-Type: application/json
 
-### REVISAR EL DE ABAJO
+{
+    "NOMBRE_SUCURSALES": "Unicenter"
+}
 
-GET {{api}}/sucursales/NOMBRE_SUCURSALES/html?ordenar=arriba HTTP/1.1
-
-### REVISAR EL DE ABAJO
+###
 
 POST {{api}}/sucursales HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 30000,
-    "NOMBRE_SUCURSAL": "Rosario",
-    "HORARIOS": "19:00",
-    "ASIENTOS": "A1"
-}
-
-### TESTEAR EL DE ABAJO CUANDO FUNCIONE EL DE ARRIBA
-
-
-DELETE {{api}}/sucursales/1 HTTP/1.1
-
-### TESTEAR EL DE ABAJO
-
-PUT {{api}}/sucursales/1 HTTP/1.1
-Content-Type: application/json
-
-{
     "id": 1,
-    "NOMBRE_SUCURSAL": "Rosario",
+    "NOMBRE_SUCURSAL": "PRUEBA",
     "HORARIOS": "19:00",
     "ASIENTOS": "A1"
 }
 
-####
+###
 
-PATCH {{api}}/sucursales HTTP/1.1
+DELETE {{api}}/sucursales/7204 HTTP/1.1
+
+###
+
+PUT {{api}}/sucursales/7203 HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 2,
+    "id": 7203,
+    "NOMBRE_SUCURSAL": "PROBANDOO",
+    "HORARIOS": "15:00",
+    "ASIENTOS": "B3"
+}
+
+###
+
+PATCH {{api}}/sucursales/7204 HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 7204,
     "NOMBRE_SUCURSAL": "Mendoza"
 }
