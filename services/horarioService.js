@@ -1,64 +1,30 @@
-const horarioRepository = require('../repositories/horarioSQLRepository')
+const horarioRepository = require("../repositories/horarioSQLRepository");
 
 exports.getTodosHorarios = async () => {
-    try {
-        console.log("SERVICE - getTodosHorarios")
-        let testDatos = await horarioRepository.getHorariosRepository()
-        //console.log("SERVICE - " + testDatos)
-        return testDatos
-    } catch (error) {
-        console.log("Error en getTodosHorarios - " + error)
-        //throw Error("Error en getTodosHorarios - " + error) 
-    }
-}
+  return await horarioRepository.getTodosHorariosRepository();
+};
 
-exports.getHorariosFiltered = (horario, orderBy) => {
-    try {
-        console.log(`SERVICE - getHorariosFiltered - sucursal:${horario} - orderBy:${orderBy}`)
-        return horarioRepository.getHorariosFilteredRepository(horario,orderBy)
-    } catch (error) {
-        console.log("Error en getHorariosFiltered - " + error)
-        throw Error("Error en getHorariosFiltered - " + error)
-    }
-}
+exports.getHorarioPorSucursal = async (nombreSucursal) => {
+  const sucursal = await horarioRepository.getSucursalByNombre(nombreSucursal);
+  if (!sucursal.length) return null;
 
-exports.createNewHorarios = async (horario) => {
-    try {
-        console.log(`SERVICE - createNewHorario - horario:${horario}`)
+  const sucursalId = sucursal[0].ID;
+  const horarios = await horarioRepository.getHorariosPorSucursal(sucursalId);
 
-        return await horarioRepository.createNewHorariosRepository(horario)
-    } catch (error) {
-        console.log("Error en createNewHorarios - " + error)
-        throw Error("Error en el service: " + error)
-    }
-}
+  return {
+    ...sucursal[0],
+    HORARIOS: horarios,
+  };
+};
+
+exports.createNuevoHorario = async (horario) => {
+  return await horarioRepository.createNuevoHorarioRepository(horario);
+};
+
+exports.updateHorario = async (id, datosHorario) => {
+  return await horarioRepository.updateHorarioRepository(id, datosHorario);
+};
 
 exports.deleteHorario = async (id) => {
-    try {
-        console.log(`SERVICE - deleteHorario - id:${id}`)
-        return await frontendRepository.deleteHorarioRepository(id)
-    } catch (error) {
-        console.log("Error en deleteHorario  - " + error)
-        throw Error("Error en el service: " + error)
-    }
-}
-
-exports.updateHorario = async (id, horarioActualizado) => {
-    try {
-        console.log(`SERVICE - updateHorario - id:${id} - horarioActualizado:${horarioActualizado}`)
-        return await horarioRepository.updateHorarioRepository(id, horarioActualizado)
-    } catch (error) {
-        console.log("Error en updateHorario  - " + error)
-        throw Error("Error en el service: " + error)
-    }
-}
-
-exports.updateHorarioItem = async (id, horarioActualizado) => {
-    try {
-        console.log(`SERVICE - updateHorarioItem - id:${id} - horarioActualizado:${JSON.stringify(horarioActualizado)}`)
-        return await horarioRepository.updateHorarioItemRepository(id, horarioActualizado)
-    } catch (error) {
-        console.log("Error en updateHorario  - " + error)
-        throw Error("Error en el service: " + error)
-    }
-}
+  return await horarioRepository.deleteHorarioRepository(id);
+};
