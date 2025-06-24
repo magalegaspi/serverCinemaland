@@ -6,7 +6,10 @@ exports.getSucursalesRepository = async (orden = "ASC") => {
   const pool = await getSQLConnection();
 
   try {
-    const query = orden.toUpperCase() === "DESC" ? queries.getSucursalesDesc : queries.getSucursalesAsc;
+    const query =
+      orden.toUpperCase() === "DESC"
+        ? queries.getSucursalesDesc
+        : queries.getSucursalesAsc;
     const resultado = await pool.request().query(query);
     return resultado.recordset;
   } catch (error) {
@@ -58,7 +61,11 @@ exports.getAsientosPorSucursal = async (sucursalId) => {
   }
 };
 
-exports.createNewSucursalRepository = async ({ NOMBRE, HORARIOS, ASIENTOS }) => {
+exports.createNewSucursalRepository = async ({
+  NOMBRE,
+  HORARIOS,
+  ASIENTOS,
+}) => {
   const pool = await getSQLConnection();
 
   try {
@@ -114,7 +121,8 @@ exports.deleteSucursalRepository = async (id) => {
   const pool = await getSQLConnection();
 
   try {
-    await pool.request()
+    await pool
+      .request()
       .input("ID", sql.Int, id)
       .query(queries.deleteSucursalCompleta);
 
@@ -126,8 +134,6 @@ exports.deleteSucursalRepository = async (id) => {
     pool.close();
   }
 };
-
-
 
 exports.getSucursalCompleta = async (nombreSucursal) => {
   const pool = await getSQLConnection();
@@ -149,7 +155,8 @@ exports.getSucursalCompleta = async (nombreSucursal) => {
 exports.deleteHorarioDeSucursal = async (id, hora) => {
   const pool = await getSQLConnection();
   try {
-    await pool.request()
+    await pool
+      .request()
       .input("ID", sql.Int, id)
       .input("HORA", sql.VarChar, hora)
       .query(queries.deleteHorario);
@@ -164,7 +171,8 @@ exports.deleteHorarioDeSucursal = async (id, hora) => {
 exports.deleteAsientoDeSucursal = async (id, codigo) => {
   const pool = await getSQLConnection();
   try {
-    await pool.request()
+    await pool
+      .request()
       .input("ID", sql.Int, id)
       .input("CODIGO", sql.VarChar, codigo)
       .query(queries.deleteAsiento);

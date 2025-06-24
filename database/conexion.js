@@ -6,9 +6,6 @@ const getSQLConnection = async () => {
   try {
     const pool = await sql.connect(configDB);
 
-    // Ejemplo de consulta (opcional):
-    // const resultado = await pool.request().query('SELECT TOP 1 * FROM Lenguajes');
-    // console.log(resultado.recordset);
     console.log("Servidor funcionando: " + JSON.stringify(pool));
 
     return pool;
@@ -17,8 +14,6 @@ const getSQLConnection = async () => {
   }
 };
 
-// Ejecutar si querés probar directamente
 getSQLConnection();
 
-// Exportar para usar en otros módulos
 exports.getSQLConnection = getSQLConnection;

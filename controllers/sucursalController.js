@@ -30,23 +30,6 @@ exports.readSucursalSola = async (req, res) => {
   }
 };
 
-exports.readSucursalCompleta = async (req, res) => {
-  try {
-    const nombreSucursal = req.params.sucursal; // parámetro en ruta
-    const sucursal = await sucursalService.getSucursalCompletaPorNombre(
-      nombreSucursal
-    );
-    if (!sucursal)
-      return res.status(404).json({ message: "Sucursal no encontrada" });
-
-    res.json(sucursal);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al obtener sucursal", error: error.message });
-  }
-};
-
 exports.createSucursal = async (req, res) => {
   try {
     const sucursalNueva = req.body;

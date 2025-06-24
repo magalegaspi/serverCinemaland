@@ -2,8 +2,7 @@ const { get } = require("../routers/RouterSucursales");
 const { updateSucursal } = require("../services/sucursalService");
 
 module.exports = {
-
-    // SUCURSALES
+  // SUCURSALES
   getSucursalesAsc: `
     USE Cinemaland2;
     SELECT DISTINCT NOMBRE FROM Sucursales ORDER BY NOMBRE ASC;
@@ -26,7 +25,7 @@ module.exports = {
     VALUES (@NOMBRE);
     SELECT SCOPE_IDENTITY() AS ID;
   `,
-  
+
   updateSucursal: `
     USE Cinemaland2;
     UPDATE Sucursales
@@ -46,7 +45,6 @@ module.exports = {
   DELETE FROM Sucursales WHERE ID = @ID;
 `,
 
-
   getSucursalCompleta: `
   USE Cinemaland2;
   SELECT 
@@ -60,9 +58,7 @@ module.exports = {
   WHERE s.NOMBRE = @nombreSucursal;
 `,
 
-
-
-  // HORARIOS
+  // HORARIOS POR SUCURSAL
 
   getHorariosPorSucursal: `
     USE Cinemaland2;
@@ -79,21 +75,65 @@ module.exports = {
   DELETE FROM Horarios WHERE SUCURSAL_ID = @ID AND HORA = @HORA;
 `,
 
-
-  // ASIENTOS
+  // ASIENTOS POR SUCURSAL
 
   getAsientosPorSucursal: `
     USE Cinemaland2;
     SELECT CODIGO FROM Asientos WHERE SUCURSAL_ID = @sucursalId ORDER BY CODIGO;
   `,
 
+  deleteAsiento: `
+  USE Cinemaland2;
+  DELETE FROM Asientos WHERE SUCURSAL_ID = @ID AND CODIGO = @CODIGO;
+`,
+
+  // ASIENTOS
+
+  getAsientoAsc: `
+    USE Cinemaland2;
+    SELECT DISTINCT CODIGO FROM Asientos ORDER BY CODIGO ASC;
+  `,
+
+  getAsientoDesc: `
+    USE Cinemaland2;
+    SELECT DISTINCT CODIGO FROM Asientos ORDER BY CODIGO DESC;
+  `,
+
+  getAsiento: `
+    USE Cinemaland2;
+    SELECT * FROM Asientos 
+    WHERE LOWER(CODIGO) = LOWER(@nombreAsiento);
+  `,
+
+  updateAsiento: `
+    USE Cinemaland2;
+    UPDATE Asientos
+    SET SUCURSAL_ID = @SUCURSAL_ID, CODIGO = @CODIGO
+    WHERE ID = @ID;
+  `,
   addAsiento: `
     USE Cinemaland2;
     INSERT INTO Asientos (SUCURSAL_ID, CODIGO) VALUES (@SUCURSAL_ID, @CODIGO);
   `,
 
-  deleteAsiento: `
+  getAsientoById: `
+    USE Cinemaland2;
+    SELECT * FROM Asientos WHERE ID = @ID;
+  `,
+
+  getAsientoCompleto: `
   USE Cinemaland2;
-  DELETE FROM Asientos WHERE SUCURSAL_ID = @ID AND CODIGO = @CODIGO;
-`
+SELECT 
+  a.ID AS ASIENTO_ID,
+  a.CODIGO AS ASIENTO,
+  s.NOMBRE AS SUCURSAL
+FROM Asientos a
+JOIN Sucursales s ON a.SUCURSAL_ID = s.ID
+WHERE a.CODIGO = @nombreAsiento;
+  `,
+
+  deleteAsientoId: `
+  USE Cinemaland2;
+  DELETE FROM Asientos WHERE ID = @ID;
+`,
 };

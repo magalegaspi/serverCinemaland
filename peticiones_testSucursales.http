@@ -13,6 +13,11 @@ GET {{api}}/sucursales?ordenar=desc HTTP/1.1
 # Obtener los datos de una sucursal específica por su nombre (incluye horarios y asientos)
 GET {{api}}/sucursales/Unicenter HTTP/1.1
 Content-Type: application/json
+###
+
+# Obtener detalle completo (horarios y asientos) de una sucursal
+GET http://localhost:3000/api/sucursales/detalle/Unicenter HTTP/1.1
+Content-Type: application/json
 
 ###
 
@@ -39,7 +44,6 @@ DELETE http://localhost:3000/api/sucursales/1/asiento/A5 HTTP/1.1
 # Eliminar una sucursal por su ID
 DELETE http://localhost:3000/api/sucursales/11 HTTP/1.1
 
-
 ###
 
 # Actualizar el nombre de una sucursal existente por su ID
@@ -52,15 +56,9 @@ Content-Type: application/json
 
 ###
 
-# Obtener detalle completo (horarios y asientos) de una sucursal
-GET http://localhost:3000/api/sucursales/detalle/Unicenter HTTP/1.1
-Content-Type: application/json
-
-###
-
 PATCH {{api}}/sucursales/12 HTTP/1.1
 Content-Type: application/json
 
 {
-    "NOMBRE": "Mendoza"
+    "NOMBRE": "Hoyts"
 }

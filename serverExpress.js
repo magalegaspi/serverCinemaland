@@ -3,14 +3,12 @@ const app = express();
 const HOSTNAME = "0.0.0.0";
 const PORT = 3000;
 
-// CAMBIAR
 const routerSucursal = require("./routers/RouterSucursales");
-//const routerApiPrincipal = require('./routers/RouterApiPrincipal');
+const routerAsiento = require("./routers/RouterAsientos");
 
-// CAMBIAR
 //Routers
 app.use("/api/sucursales", routerSucursal);
-//app.use('/api', routerApiPrincipal);
+app.use("/api/asientos", routerAsiento);
 
 //Metodos HTTP
 app.get("/", (req, res) => {
