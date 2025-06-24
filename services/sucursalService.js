@@ -5,6 +5,19 @@ exports.getTodasSucursales = async (orden) => {
   return await sucursalRepository.getSucursalesRepository(ordenar);
 };
 
+exports.getSucursalSolaPorNombre = async (nombreSucursal) => {
+  const sucursal = await sucursalRepository.getSucursalByNombre(nombreSucursal);
+  if (!sucursal.length) return null;
+
+  const sucursalId = sucursal[0].ID;
+  const horarios = await sucursalRepository.getHorariosPorSucursal(sucursalId);
+  const asientos = await sucursalRepository.getAsientosPorSucursal(sucursalId);
+
+  return {
+    ...sucursal[0],
+  };
+};
+
 exports.getSucursalCompletaPorNombre = async (nombreSucursal) => {
   const sucursal = await sucursalRepository.getSucursalByNombre(nombreSucursal);
   if (!sucursal.length) return null;

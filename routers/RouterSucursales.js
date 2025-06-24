@@ -6,7 +6,7 @@ routerSucursal.use(express.json());
 
 // get
 routerSucursal.get("/", sucursalController.readSucursales);
-routerSucursal.get("/:sucursal", sucursalController.readSucursalCompleta);
+routerSucursal.get("/:sucursal", sucursalController.readSucursalSola);
 routerSucursal.get("/detalle/:nombre", sucursalController.readSucursalCompleta);
 
 // post
@@ -22,6 +22,5 @@ routerSucursal.delete("/:id/asiento/:codigo", sucursalController.deleteAsiento);
 
 // patch
 routerSucursal.patch("/:id", sucursalController.updateSucursalItems);
-
 
 module.exports = routerSucursal;

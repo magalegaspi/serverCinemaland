@@ -7,19 +7,43 @@ exports.readSucursales = async (req, res) => {
     const sucursales = await sucursalService.getTodasSucursales(ordenar);
     res.json(sucursales);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener sucursales", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener sucursales", error: error.message });
+  }
+};
+
+exports.readSucursalSola = async (req, res) => {
+  try {
+    const nombreSucursal = req.params.sucursal; // parámetro en ruta
+    const sucursal = await sucursalService.getSucursalSolaPorNombre(
+      nombreSucursal
+    );
+    if (!sucursal)
+      return res.status(404).json({ message: "Sucursal no encontrada" });
+
+    res.json(sucursal);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error al obtener sucursal", error: error.message });
   }
 };
 
 exports.readSucursalCompleta = async (req, res) => {
   try {
     const nombreSucursal = req.params.sucursal; // parámetro en ruta
-    const sucursal = await sucursalService.getSucursalCompletaPorNombre(nombreSucursal);
-    if (!sucursal) return res.status(404).json({ message: "Sucursal no encontrada" });
+    const sucursal = await sucursalService.getSucursalCompletaPorNombre(
+      nombreSucursal
+    );
+    if (!sucursal)
+      return res.status(404).json({ message: "Sucursal no encontrada" });
 
     res.json(sucursal);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener sucursal", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener sucursal", error: error.message });
   }
 };
 
@@ -29,7 +53,9 @@ exports.createSucursal = async (req, res) => {
     const resultado = await sucursalService.createNewSucursal(sucursalNueva);
     res.status(201).json(resultado);
   } catch (error) {
-    res.status(500).json({ message: "Error al crear sucursal", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al crear sucursal", error: error.message });
   }
 };
 
@@ -39,11 +65,14 @@ exports.updateSucursal = async (req, res) => {
     const { NOMBRE } = req.body;
 
     const resultado = await sucursalService.updateSucursal(id, NOMBRE);
-    if (!resultado) return res.status(404).json({ message: "Sucursal no encontrada" });
+    if (!resultado)
+      return res.status(404).json({ message: "Sucursal no encontrada" });
 
     res.json({ message: "Sucursal actualizada correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar sucursal", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al actualizar sucursal", error: error.message });
   }
 };
 
@@ -57,19 +86,24 @@ exports.deleteSucursal = async (req, res) => {
 
     await sucursalService.deleteSucursal(id);
 
-    res.status(200).send({ message: `Sucursal con id ${id} eliminada correctamente` });
+    res
+      .status(200)
+      .send({ message: `Sucursal con id ${id} eliminada correctamente` });
   } catch (error) {
     console.error("Error al eliminar sucursal:", error);
-    res.status(500).send({ message: "Error al eliminar sucursal", error: error.message });
+    res
+      .status(500)
+      .send({ message: "Error al eliminar sucursal", error: error.message });
   }
 };
-
 
 exports.readSucursalCompleta = async (req, res) => {
   const nombreSucursal = req.params.nombre;
 
   try {
-    const resultado = await sucursalService.getSucursalConHorariosYAsientos(nombreSucursal);
+    const resultado = await sucursalService.getSucursalConHorariosYAsientos(
+      nombreSucursal
+    );
     if (!resultado || resultado.length === 0) {
       return res.status(404).json({ mensaje: "Sucursal no encontrada" });
     }
