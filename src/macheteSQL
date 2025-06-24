@@ -1,0 +1,79 @@
+-- Sucursales del cine
+CREATE TABLE Sucursales (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    NOMBRE VARCHAR(100) NOT NULL
+);
+
+-- Horarios en cada sucursal
+CREATE TABLE Horarios (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    SUCURSAL_ID INT NOT NULL,
+    HORA TIME NOT NULL,
+    FOREIGN KEY (SUCURSAL_ID) REFERENCES Sucursales(ID)
+);
+
+-- Asientos disponibles en cada sucursal
+CREATE TABLE Asientos (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    SUCURSAL_ID INT NOT NULL,
+    CODIGO VARCHAR(10) NOT NULL,  -- Ej: A1, B2
+    FOREIGN KEY (SUCURSAL_ID) REFERENCES Sucursales(ID)
+);
+
+
+USE Cinemaland2
+
+INSERT INTO Sucursales (NOMBRE) VALUES ('Abasto_Shopping');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Alto_Avellaneda');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Devoto');
+INSERT INTO Sucursales (NOMBRE) VALUES ('DOT_Shopping');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Jumbo_Quilmes');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Patio_Bullrich');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Puerto_Madero');
+INSERT INTO Sucursales (NOMBRE) VALUES ('Unicenter');
+
+
+-- Horarios a insertar
+DECLARE @horas TABLE (HORA TIME);
+INSERT INTO @horas (HORA)
+VALUES ('12:00'), ('16:00'), ('20:00'), ('22:00');
+
+-- Iterar por cada sucursal y agregar los 4 horarios
+DECLARE @idSucursal INT = 1;
+
+WHILE @idSucursal <= 8
+BEGIN
+    INSERT INTO Horarios (SUCURSAL_ID, HORA)
+    SELECT @idSucursal, HORA FROM @horas;
+    
+    SET @idSucursal += 1;
+END
+
+
+-- Recorre todas las sucursales (IDs del 1 al 8)
+DECLARE @idSucursal INT = 1;
+WHILE @idSucursal <= 8
+BEGIN
+    DECLARE @fila CHAR(1) = 'A';
+    WHILE @fila <= 'O'
+    BEGIN
+        DECLARE @col INT = 1;
+        WHILE @col <= 10
+        BEGIN
+            INSERT INTO Asientos (SUCURSAL_ID, CODIGO)
+            VALUES (@idSucursal, CONCAT(@fila, @col));
+            
+            SET @col += 1;
+        END
+        SET @fila = CHAR(ASCII(@fila) + 1);
+    END
+    SET @idSucursal += 1;
+END
+
+
+USE Cinemaland2 SELECT DISTINCT NOMBRE FROM SUCURSALES
+
+
+USE Cinemaland2
+ALTER TABLE Horarios
+ALTER COLUMN HORA VARCHAR(8);
