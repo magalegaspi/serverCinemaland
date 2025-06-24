@@ -1,51 +1,66 @@
-@api = {{api}}
+@api = http://localhost:3000/api
 
-
-GET {{api}}/sucursales HTTP/1.1
+# Obtener todas las sucursales ordenadas de forma ascendente (A-Z)
+GET {{api}}/sucursales?ordenar=asc HTTP/1.1
 
 ###
 
-DELETE {{api}}/sucursales HTTP/1.1
+# Obtener todas las sucursales ordenadas de forma descendente (Z-A)
+GET {{api}}/sucursales?ordenar=desc HTTP/1.1
 
-### REVISAR EL DE ABAJO
+###
 
-GET {{api}}/sucursales/NOMBRE_SUCURSALES/html?ordenar=arriba HTTP/1.1
+# Obtener los datos de una sucursal específica por su nombre (incluye horarios y asientos)
+GET {{api}}/sucursales/Unicenter HTTP/1.1
+Content-Type: application/json
 
-### REVISAR EL DE ABAJO
+###
 
+# Crear una nueva sucursal con sus horarios y asientos
 POST {{api}}/sucursales HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 30000,
-    "NOMBRE_SUCURSAL": "Rosario",
-    "HORARIOS": "19:00",
-    "ASIENTOS": "A1"
+  "NOMBRE": "Sucursal Test Gonza",
+  "HORARIOS": "12:00,16:00,20:00,22:00",
+  "ASIENTOS": "A1,A2,A3,A4,A5"
 }
 
-### TESTEAR EL DE ABAJO CUANDO FUNCIONE EL DE ARRIBA
+
+### Eliminar un horario específico
+DELETE http://localhost:3000/api/sucursales/1/horario/16:00 HTTP/1.1
 
 
-DELETE {{api}}/sucursales/1 HTTP/1.1
+### Eliminar un asiento específico
+DELETE http://localhost:3000/api/sucursales/1/asiento/A5 HTTP/1.1
 
-### TESTEAR EL DE ABAJO
+###
 
-PUT {{api}}/sucursales/1 HTTP/1.1
+# Eliminar una sucursal por su ID
+DELETE http://localhost:3000/api/sucursales/11 HTTP/1.1
+
+
+###
+
+# Actualizar el nombre de una sucursal existente por su ID
+PUT {{api}}/sucursales/12 HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 1,
-    "NOMBRE_SUCURSAL": "Rosario",
-    "HORARIOS": "19:00",
-    "ASIENTOS": "A1"
+  "NOMBRE": "Sucursal Actualizada"
 }
 
-####
+###
 
-PATCH {{api}}/sucursales HTTP/1.1
+# Obtener detalle completo (horarios y asientos) de una sucursal
+GET http://localhost:3000/api/sucursales/detalle/Unicenter HTTP/1.1
+Content-Type: application/json
+
+###
+
+PATCH {{api}}/sucursales/12 HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 2,
-    "NOMBRE_SUCURSAL": "Mendoza"
+    "NOMBRE": "Mendoza"
 }

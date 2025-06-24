@@ -1,195 +1,194 @@
-//const frontend = require('../src/lenguajesFrontBack').infoLenguajes.frontend // CAMBIAR ESTOOOO
-const { getSQLConnection } = require('../database/conexion')
-const queries = require('../database/queries')
-const sql = require('mssql');
+const { getSQLConnection } = require("../database/conexion");
+const queries = require("../database/queries");
+const sql = require("mssql");
 
+exports.getSucursalesRepository = async (orden = "ASC") => {
+  const pool = await getSQLConnection();
 
-// ACA VAN TODOS LOS SCRIPTS PARA LLAMAR A LA BASE DE DATOS Y TRAER LAS SUCURSALES
+  try {
+    const query = orden.toUpperCase() === "DESC" ? queries.getSucursalesDesc : queries.getSucursalesAsc;
+    const resultado = await pool.request().query(query);
+    return resultado.recordset;
+  } catch (error) {
+    throw new Error("Error en getSucursalesRepository - " + error);
+  } finally {
+    pool.close();
+  }
+};
 
+exports.getSucursalByNombre = async (nombreSucursal) => {
+  const pool = await getSQLConnection();
 
-// GET SUCURSALES
-exports.getSucursalesRepository = async () => {
-    const pool = await getSQLConnection()
-    
-    try{
-        const resultado = await pool.request().query(queries.getSucursales)
-        console.table(resultado.recordset)
+  try {
+    const resultado = await pool
+      .request()
+      .input("nombreSucursal", sql.NVarChar, nombreSucursal)
+      .query(queries.getSucursal);
+    return resultado.recordset;
+  } finally {
+    pool.close();
+  }
+};
 
-        return resultado.recordset
-    } catch (error) {
-        console.log("Error en getSucursalesRepository - " + error)
-        //throw Error("Error en getSucursalesRepository - " + error) 
-    } finally {
-        pool.close()
+exports.getHorariosPorSucursal = async (sucursalId) => {
+  const pool = await getSQLConnection();
+
+  try {
+    const resultado = await pool
+      .request()
+      .input("sucursalId", sql.Int, sucursalId)
+      .query(queries.getHorariosPorSucursal);
+    return resultado.recordset.map((r) => r.HORA);
+  } finally {
+    pool.close();
+  }
+};
+
+exports.getAsientosPorSucursal = async (sucursalId) => {
+  const pool = await getSQLConnection();
+
+  try {
+    const resultado = await pool
+      .request()
+      .input("sucursalId", sql.Int, sucursalId)
+      .query(queries.getAsientosPorSucursal);
+    return resultado.recordset.map((r) => r.CODIGO);
+  } finally {
+    pool.close();
+  }
+};
+
+exports.createNewSucursalRepository = async ({ NOMBRE, HORARIOS, ASIENTOS }) => {
+  const pool = await getSQLConnection();
+
+  try {
+    // Insertar sucursal
+    const insertSucursal = await pool
+      .request()
+      .input("NOMBRE", sql.NVarChar, NOMBRE)
+      .query(queries.addSucursal);
+
+    const sucursalID = insertSucursal.recordset[0].ID;
+
+    // Insertar horarios
+    for (const hora of HORARIOS.split(",")) {
+      await pool
+        .request()
+        .input("SUCURSAL_ID", sql.Int, sucursalID)
+        .input("HORA", sql.VarChar, hora.trim())
+        .query(queries.addHorario);
     }
 
-}
-
-// NO SE SI DEJAR ESTO
-
-exports.getSucursalesFilteredRepository = (sucursal, orderBy) => {
-    console.log(`REPOSITORY - getSucursalesLanguagesFiltered - sucursal:${sucursal} - orderBy:${orderBy}`)
-    const filtrado = sucursal.filter(
-        sucursales => sucursales.nombre.toLocaleLowerCase() === sucursal.toLocaleLowerCase()
-    )
-
-    console.log("El valor del query param ordenar es:", orderBy)
-
-    if(filtrado.length === 0){
-        return []
+    // Insertar asientos
+    for (const asiento of ASIENTOS.split(",")) {
+      await pool
+        .request()
+        .input("SUCURSAL_ID", sql.Int, sucursalID)
+        .input("CODIGO", sql.VarChar, asiento.trim())
+        .query(queries.addAsiento);
     }
 
-    if(orderBy === "arriba"){
-        return filtrado.sort(
-            (a,b) => b.cantidadSucursales - a.cantidadSucursales
-        )
-    }else if (orderBy === "abajo"){
-        return filtrado.sort(
-            (a,b) => a.cantidadSucursales - b.cantidadSucursales
-        )
-    }else{
-        return filtrado
-    }
-}
+    return { ID: sucursalID, NOMBRE, HORARIOS, ASIENTOS };
+  } finally {
+    pool.close();
+  }
+};
 
+exports.updateSucursalRepository = async (id, nombre) => {
+  const pool = await getSQLConnection();
 
-exports.createNewSucursalRepository = async (sucursal) => {
-    const { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS } = sucursal;
-    const pool = await getSQLConnection();
+  try {
+    await pool
+      .request()
+      .input("ID", sql.Int, id)
+      .input("NOMBRE", sql.NVarChar, nombre)
+      .query(queries.updateSucursal);
 
-    try {
-        console.log(`REPOSITORY  - createNewSucursal - sucursal:${sucursal}`)
-
-        const resultado = await pool.request()
-        .input('NOMBRE_SUCURSAL', sql.NVarChar, NOMBRE_SUCURSAL)
-        .input('HORARIOS', sql.NVarChar, HORARIOS)
-        .input('ASIENTOS', sql.NVarChar, ASIENTOS)
-        .query(queries.addSucursal)
-
-        const sucursalNueva = { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS }
-        console.table(sucursalNueva)
-
-        return resultado.recordset
-    } catch (error) {
-        console.log("createNewSucursalRepository - " + error)
-        //throw Error("Error al intentar crear el nuevo lenguaje: - " + error)
-    } finally {
-        pool.close()
-    }
-}
+    return true;
+  } finally {
+    pool.close();
+  }
+};
 
 exports.deleteSucursalRepository = async (id) => {
-    const pool = await getSQLConnection();
+  const pool = await getSQLConnection();
 
-    try {
-        console.log(`REPOSITORY  - deleteSucursal - id:${id}`)
-        const sucursalEncontrada = await pool.request()
-        .input('id', sql.Int, id)
-        .query(queries.getSucursalById)
+  try {
+    await pool.request()
+      .input("ID", sql.Int, id)
+      .query(queries.deleteSucursalCompleta);
 
-        if(sucursalEncontrada.recordset.length == 0){
-            console.log("Sucursal no encontrada");
-        }else{
-            console.log("Se eliminó la sucursal de la lista, id:" + id)
-            console.table(sucursalEncontrada.recordset[0])
-            await pool.request()
-            .input('id', sql.Int, id)
-            .query(queries.deleteSucursal)
+    return true; // o lo que devuelvas
+  } catch (error) {
+    console.error("Error en deleteSucursalRepository -", error);
+    throw new Error("Error en deleteSucursalRepository - " + error);
+  } finally {
+    pool.close();
+  }
+};
 
-            return sucursalEncontrada.recordset[0]
-        }
 
-    } catch (error) {
-        console.log("deleteSucursalRepository - " + error)
-        //throw Error("Error al intentar eliminar sucursal: - " + error)
-    } finally {
-        pool.close()
-    }
-}
 
-exports.updateSucursalRepository = async (id, sucursalActualizada) => {
-    console.log(`REPOSITORY  - updateSucursal - id:${id} - sucursalActualizada:${sucursalActualizada}`)
-    const { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS } = sucursalActualizada;
-    const pool = await getSQLConnection();
+exports.getSucursalCompleta = async (nombreSucursal) => {
+  const pool = await getSQLConnection();
 
-    try {
+  try {
+    const resultado = await pool
+      .request()
+      .input("nombreSucursal", sql.NVarChar, nombreSucursal)
+      .query(queries.getSucursalCompleta);
+    return resultado.recordset;
+  } catch (error) {
+    console.error("Error en getSucursalCompleta -", error);
+    throw error;
+  } finally {
+    pool.close();
+  }
+};
 
-        await pool.request().query('USE IFTS11')
-                
-        const requestActualizado = pool.request().input('id', sql.Int, id)
-        if(NOMBRE_SUCURSAL != null) requestActualizado.input('NOMBRE_SUCURSAL', sql.Int, NOMBRE_SUCURSAL)
-        if(HORARIOS != null) requestActualizado.input('HORARIOS', sql.NVarChar, HORARIOS)
-        if(ASIENTOS != null) requestActualizado.input('ASIENTOS', sql.Int, ASIENTOS)
-            
-        let queryActualizada = 'UPDATE Lenguajes SET ';
-        if(NOMBRE_SUCURSAL != null) queryActualizada += 'NOMBRE_SUCURSAL = @NOMBRE_SUCURSAL, '
-        if(HORARIOS != null) queryActualizada += 'HORARIOS = @HORARIOS, '
-        if(ASIENTOS != null) queryActualizada += 'ASIENTOS = @ASIENTOS, '
+exports.deleteHorarioDeSucursal = async (id, hora) => {
+  const pool = await getSQLConnection();
+  try {
+    await pool.request()
+      .input("ID", sql.Int, id)
+      .input("HORA", sql.VarChar, hora)
+      .query(queries.deleteHorario);
+    return true;
+  } catch (error) {
+    throw new Error("Error al eliminar el horario: " + error);
+  } finally {
+    pool.close();
+  }
+};
 
-        //console.log(queryActualizada)
-        queryActualizada = queryActualizada.trim().replace(/,$/, '')
-        //console.log(queryActualizada)
-        queryActualizada += ' WHERE id = @id'
-        //console.log(queryActualizada)
+exports.deleteAsientoDeSucursal = async (id, codigo) => {
+  const pool = await getSQLConnection();
+  try {
+    await pool.request()
+      .input("ID", sql.Int, id)
+      .input("CODIGO", sql.VarChar, codigo)
+      .query(queries.deleteAsiento);
+    return true;
+  } catch (error) {
+    throw new Error("Error al eliminar el asiento: " + error);
+  } finally {
+    pool.close();
+  }
+};
 
-        const sucursalActualizada = await requestActualizado.query(queryActualizada)
-        
-        if(sucursalActualizada.rowsAffected[0] == 0){
-            return null
-        }
+exports.getSucursalesByIdRepository = async (id) => {
+  const pool = await getSQLConnection();
 
-        return { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS }
-
-    } catch (error) {
-        console.log("updateSucursalRepository - " + error)
-        //throw Error("Error al intentar actualizar el lenguaje: - " + error)
-    } finally {
-        pool.close()
-    }
-}
-
-exports.updateSucursalItemRepository = async (id, sucursalActualizada) => {
-    console.log(`REPOSITORY  - updateSucursalItem - id:${id} - sucursalActualizada:${JSON.stringify(sucursalActualizada)}`)
-
-    const { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS } = sucursalActualizada;
-    const pool = await getSQLConnection();
-
-    try {
-
-        await pool.request().query('USE IFTS11')
-
-        let queryActualizada = 'UPDATE Lenguajes SET ';
-        const requestActualizado = pool.request().input('id', sql.Int, id)
-        if (NOMBRE_SUCURSAL != null) {
-            requestActualizado.input('NOMBRE_SUCURSAL', sql.Int, NOMBRE_SUCURSAL)
-            queryActualizada += 'NOMBRE_SUCURSAL = @NOMBRE_SUCURSAL, '
-        }
-        if (HORARIOS != null) {
-            requestActualizado.input('HORARIOS', sql.NVarChar, HORARIOS)
-            queryActualizada += 'HORARIOS = @HORARIOS, '
-        }
-        if (ASIENTOS != null) {
-            requestActualizado.input('ASIENTOS', sql.Int, ASIENTOS)
-            queryActualizada += 'ASIENTOS = @ASIENTOS, '
-        }
-
-        //console.log(queryActualizada)
-        queryActualizada = queryActualizada.trim().replace(/,$/, '')
-        //console.log(queryActualizada)
-        queryActualizada += ' WHERE id = @id'
-        //console.log(queryActualizada)
-
-        const sucursalActualizada = await requestActualizado.query(queryActualizada)
-
-        if (sucursalActualizada.rowsAffected[0] == 0) {
-            return null
-        }
-
-        return { NOMBRE_SUCURSAL, HORARIOS, ASIENTOS }
-    } catch (error) {
-        console.log("updateSucursalItemRepository - " + error)
-        //throw Error("Error al intentar actualizar la sucursal: - " + error)
-    } finally {
-        pool.close()
-    }
-}
+  try {
+    const sucursalEncontrada = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query(queries.getSucursalById);
+    return sucursalEncontrada.recordset[0];
+  } catch (error) {
+    console.log("Error en getSucursalesRepository - " + error);
+    throw Error("Error en getSucursalesRepository - " + error);
+  } finally {
+    pool.close();
+  }
+};
