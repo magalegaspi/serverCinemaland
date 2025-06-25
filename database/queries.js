@@ -136,4 +136,55 @@ WHERE a.CODIGO = @nombreAsiento;
   USE Cinemaland2;
   DELETE FROM Asientos WHERE ID = @ID;
 `,
+
+// HORARIOS
+
+  getHorariosAsc: `
+    USE Cinemaland2;
+    SELECT DISTINCT HORA FROM Horarios ORDER BY HORA ASC;
+  `,
+
+  getHorariosDesc: `
+    USE Cinemaland2;
+    SELECT DISTINCT HORA FROM Horarios ORDER BY HORA DESC;
+  `,
+
+  getHorario: `
+    USE Cinemaland2;
+    SELECT * FROM Horarios 
+    WHERE LOWER(HORA) = LOWER(@nombreHorario);
+  `,
+
+  updateHorario: `
+    USE Cinemaland2;
+    UPDATE Horarios
+    SET SUCURSAL_ID = @SUCURSAL_ID, HORA = @HORA
+    WHERE ID = @ID;
+  `,
+  addHorario: `
+    USE Cinemaland2;
+    INSERT INTO Horarios (SUCURSAL_ID, HORA) VALUES (@SUCURSAL_ID, @HORA);
+  `,
+
+  getHorarioById: `
+    USE Cinemaland2;
+    SELECT * FROM Horarios WHERE ID = @ID;
+  `,
+
+  getHorarioCompleto: `
+  USE Cinemaland2;
+SELECT 
+  a.ID AS HORARIO_ID,
+  a.HORA AS HORARIO,
+  s.NOMBRE AS SUCURSAL
+FROM Horarios a
+JOIN Sucursales s ON a.SUCURSAL_ID = s.ID
+WHERE a.HORA = @nombreHorario;
+  `,
+
+  deleteHorarioId: `
+  USE Cinemaland2;
+  DELETE FROM Horarios WHERE ID = @ID;
+`,
+
 };

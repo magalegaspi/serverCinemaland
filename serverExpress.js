@@ -5,10 +5,12 @@ const PORT = 3000;
 
 const routerSucursal = require("./routers/RouterSucursales");
 const routerAsiento = require("./routers/RouterAsientos");
+const routerHorario = require("./routers/RouterHorarios");
 
 //Routers
 app.use("/api/sucursales", routerSucursal);
 app.use("/api/asientos", routerAsiento);
+app.use("/api/horarios", routerHorario);
 
 //Metodos HTTP
 app.get("/", (req, res) => {
