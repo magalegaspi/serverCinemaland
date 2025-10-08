@@ -137,7 +137,7 @@ WHERE a.CODIGO = @nombreAsiento;
   DELETE FROM Asientos WHERE ID = @ID;
 `,
 
-// HORARIOS
+  // HORARIOS
 
   getHorariosAsc: `
     USE Cinemaland2;
@@ -186,5 +186,4 @@ WHERE a.HORA = @nombreHorario;
   USE Cinemaland2;
   DELETE FROM Horarios WHERE ID = @ID;
 `,
-
 };

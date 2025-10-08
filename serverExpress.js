@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const HOSTNAME = "0.0.0.0";
 const PORT = 3000;
@@ -7,6 +8,7 @@ const routerSucursal = require("./routers/RouterSucursales");
 const routerAsiento = require("./routers/RouterAsientos");
 const routerHorario = require("./routers/RouterHorarios");
 
+app.use(cors({ origin: "*" }));
 //Routers
 app.use("/api/sucursales", routerSucursal);
 app.use("/api/asientos", routerAsiento);
