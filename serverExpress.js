@@ -8,7 +8,7 @@ const routerSucursal = require("./routers/RouterSucursales");
 const routerAsiento = require("./routers/RouterAsientos");
 const routerHorario = require("./routers/RouterHorarios");
 
-app.use(cors({ origin: "*" }));
+app.use(cors());
 //Routers
 app.use("/api/sucursales", routerSucursal);
 app.use("/api/asientos", routerAsiento);
