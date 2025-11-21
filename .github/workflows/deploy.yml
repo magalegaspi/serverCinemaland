@@ -90,7 +90,7 @@ jobs:
         with:
           host: ${{ secrets.SSH__HOST }}
           username: ${{ secrets.SSH__USER }}
-          key: ${{ secrets.SSH__KEY }}
+          key: ${{ secrets.SSH__PRIVATE }}
           port: ${{ secrets.SSH__PORT || 22 }}
           script_stop: true
           script: |
