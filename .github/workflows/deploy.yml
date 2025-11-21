@@ -153,7 +153,7 @@ jobs:
               --network "$TRAEFIK_NETWORK" \
               --label "traefik.enable=true" \
               --label "traefik.docker.network=proxy" \
-              --label "traefik.http.services.cinemaland-server.loadbalancer.server.port=${{ env.APP_PORT }}" \
+              --label "traefik.http.services.cinemaland-server.loadbalancer.server.port=6000" \
               --label "traefik.http.routers.cinemaland-server.tls=true" \
               --label "traefik.http.routers.cinemaland-server.tls.certresolver=letsencrypt" \
               --label "traefik.http.routers.cinemaland-server.rule=Host(\`api-ml.error404dev.com/\`) || Host(\`www.api-ml.error404dev.com/\`)" \
