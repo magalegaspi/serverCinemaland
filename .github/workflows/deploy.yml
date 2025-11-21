@@ -88,10 +88,10 @@ jobs:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          host: ${{ secrets.SSH__HOST }}
+          username: ${{ secrets.SSH__USER }}
+          key: ${{ secrets.SSH__KEY }}
+          port: ${{ secrets.SSH__PORT || 22 }}
           script_stop: true
           script: |
             set -euo pipefail
