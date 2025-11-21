@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const HOSTNAME = "0.0.0.0";
-const PORT = 3000;
+const PORT = 6000;
 
 const routerSucursal = require("./routers/RouterSucursales");
 const routerAsiento = require("./routers/RouterAsientos");
