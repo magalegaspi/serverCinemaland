@@ -1,0 +1,167 @@
+name: API CINEMALAND Deploy
+run-name: ${{ github.actor }} está buildeando 🚀
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      OWNER_LC: ${{ steps.out.outputs.OWNER_LC }}
+      IMAGE_NAME_LC: ${{ steps.out.outputs.IMAGE_NAME_LC }}
+      TAG: ${{ steps.out.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: out
+        shell: bash
+        run: |
+          set -euo pipefail
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          IMAGE_NAME_LC="${REPO_NAME,,}"
+
+          if TAG=$(node -p 'require("./package.json").version' 2>/dev/null); then
+            :
+          else
+            TAG="${GITHUB_SHA}"
+          fi
+
+          echo "OWNER_LC=$OWNER_LC"           >> "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME_LC=$IMAGE_NAME_LC" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG"                     >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    needs: meta
+    runs-on: ubuntu-latest
+    env:
+      OWNER_LC: ${{ needs.meta.outputs.OWNER_LC }}
+      IMAGE_NAME_LC: ${{ needs.meta.outputs.IMAGE_NAME_LC }}
+      TAG: ${{ needs.meta.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push (linux/amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME_LC }}:${{ env.TAG }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME_LC }}:latest
+
+      - name: Verificar imagen en GHCR
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect ghcr.io/${OWNER_LC}/${IMAGE_NAME_LC}:${TAG} >/dev/null
+          echo "Imagen OK ✔"
+
+  deploy:
+    needs: [meta, build-and-push]
+    runs-on: ubuntu-22.04
+    env:
+      OWNER_LC: ${{ needs.meta.outputs.OWNER_LC }}
+      IMAGE_NAME_LC: ${{ needs.meta.outputs.IMAGE_NAME_LC }}
+      TAG: ${{ needs.meta.outputs.TAG }}
+      APP_PORT: "4000"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            OWNER_LC='${{ env.OWNER_LC }}'
+            IMAGE_NAME_LC='${{ env.IMAGE_NAME_LC }}'
+            TAG='${{ env.TAG }}'
+            IMAGE="ghcr.io/${OWNER_LC}/${IMAGE_NAME_LC}:${TAG}"
+
+            echo "🔐 Login GHCR"
+            GHCR_USER='${{ github.repository_owner }}'
+            echo '${{ secrets.GHCR_PAT_READ || secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+            APP_DIR="${HOME}/apps/${IMAGE_NAME_LC}"
+            CONTAINER_NAME="${IMAGE_NAME_LC}"
+
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            echo "📦 Pull $IMAGE ..."
+            if ! docker pull "$IMAGE"; then
+              echo "⚠️ No encontré ${TAG}, intento :latest"
+              IMAGE="ghcr.io/${OWNER_LC}/${IMAGE_NAME_LC}:latest"
+              docker pull "$IMAGE"
+            fi
+
+            # Redes (hardcode)
+            TRAEFIK_NETWORK="proxy"
+            APP_NETWORK_DB="postgres_app_net"
+            docker network inspect "$TRAEFIK_NETWORK" >/dev/null 2>&1 || docker network create "$TRAEFIK_NETWORK"
+            docker network inspect "$APP_NETWORK_DB"  >/dev/null 2>&1 || docker network create "$APP_NETWORK_DB"
+
+            # .env SOLO con secretos/sensibles
+            cat > .env <<EOF
+            PORT=${{ env.APP_PORT }}
+            PGHOST=${{ secrets.PGHOST }}
+            PGPORT=${{ secrets.PGPORT }}
+            PGDATABASE=${{ secrets.PGDATABASE }}
+            PGUSER=${{ secrets.PGUSER }}
+            PGPASSWORD=${{ secrets.PGPASSWORD }}
+            EOF
+            echo "📝 .env generado en $APP_DIR/.env"
+
+            docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+
+            echo "🚀 Run container"
+            docker run -d \
+              --name "$CONTAINER_NAME" \
+              \
+              -e PASSWORD_DB='${{ secrets.PASSWORD_DB }}' \
+              -e SERVER_NAME='${{ secrets.HOST_DB }}' \
+              -e USER_DB='${{ secrets.USERNAME_DB }}' \
+              -e NAME_DB='${{ secrets.DATABASE_DB }}' \
+              -e PORT_DB='${{ secrets.PORT_DB }}' \
+              \
+              -e PORT_EXPRESS='${{ secrets.PORT_EXPRESS }}' \
+              -e HOST_EXPRESS='${{ secrets.HOST_EXPRESS }}' \
+              \
+              --network "$TRAEFIK_NETWORK" \
+              --label "traefik.enable=true" \
+              --label "traefik.docker.network=proxy" \
+              --label "traefik.http.services.cinemaland-server.loadbalancer.server.port=${{ env.APP_PORT }}" \
+              --label "traefik.http.routers.cinemaland-server.tls=true" \
+              --label "traefik.http.routers.cinemaland-server.tls.certresolver=letsencrypt" \
+              --label "traefik.http.routers.cinemaland-server.rule=Host(\`api-ml.error404dev.com/\`) || Host(\`www.api-ml.error404dev.com/\`)" \
+              --restart unless-stopped \
+              "$IMAGE"
+
+            # Conectar a la red de DB
+            docker network connect "$APP_NETWORK_DB" "$CONTAINER_NAME" || true
+
+            docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+            echo "✅ Deploy OK"
